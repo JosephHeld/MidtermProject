@@ -1,0 +1,340 @@
+---
+title: "Midterm Project - Milwaukee Bucks"
+author: "Joe Held"
+date: "2024-03-25"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+  In this project, we were to graph the shots of the Milwaukee Bucks over the years. My first step was to take data from an NBA website, and then use this data to plot the points on the graph of an NBA court. I started with the year 2000 and ended in 2023. In this project, I was able to differentiate the makes and missed shots by using different colors as well as using different symbols. When I made the decision to make this graph on the NBA court, I decided to get rid of some shots in the far distance. These shots were things like half court shots, shots that were long shots right before the buzzer, and others. This only included about 34 data points over the 24 years of data. When looking at this data of all the years, we are able to see the transitions that occur as the years progress. When analyzing the data I was able to come to these conclusions.
+
+
+- Teams are Shooting More Threes
+- The Mid-Range Shot is Dying
+- Shots inside 8ft. Have Increased
+- Corner 3's are the best 3-point shots
+
+
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE, results=FALSE}
+# install the correct packages that can be are needed to be used in the project
+library(usethis)
+library(devtools)
+library(nbastatR)
+library(ggplot2)
+library(jpeg)
+library(gganimate)
+library(tidyverse)
+library(gganimate)
+
+Sys.setenv(VROOM_CONNECTION_SIZE = 10 * 1024^2)  # Set buffer size to 10 MB, this allows us to the able use and read large sets of data very quickly and use them very efficiently
+
+# these next commands take the team, the Bucks, and the year and assign it as a data set so that we are then able to access each one of these years indiviudally and are able to look at each one by itself
+bucks_shots00 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2000)
+
+bucks_shots01 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2001)
+
+bucks_shots02 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2002)
+
+bucks_shots03 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2003)
+
+bucks_shots04 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2004)
+
+bucks_shots05 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2005)
+
+bucks_shots06 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2006)
+
+bucks_shots07 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2007)
+
+bucks_shots08 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2008)
+
+bucks_shots09 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2009)
+
+bucks_shots10 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2010)
+
+bucks_shots11 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2011)
+
+bucks_shots12 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2012)
+
+bucks_shots13 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2013)
+
+bucks_shots14 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2014)
+
+bucks_shots15 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2015)
+
+bucks_shots16 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2016)
+
+bucks_shots17 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2017)
+
+bucks_shots18 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2018)
+
+bucks_shots19 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2019)
+
+bucks_shots20 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2020)
+
+bucks_shots21 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2021)
+
+bucks_shots22 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2022)
+
+bucks_shots23 <- teams_shots(teams = "Milwaukee Bucks", seasons = 2023)
+
+# Now we are going to combine all the years so that we are able to animate the different shots through the years and track the misses and makes individually
+combined_bucks_shots <- rbind(bucks_shots00, bucks_shots01, bucks_shots02, bucks_shots03, bucks_shots04, bucks_shots05, bucks_shots06, bucks_shots07, bucks_shots08, bucks_shots09, bucks_shots10, bucks_shots11, bucks_shots12, bucks_shots13, bucks_shots14, bucks_shots15, bucks_shots16, bucks_shots17, bucks_shots18, bucks_shots19, bucks_shots20, bucks_shots21, bucks_shots22, bucks_shots23)
+
+
+# Define colors for "Make(darkgreen)" and "Miss(red)"
+colors <- c("darkgreen", "red")
+
+# Read the basketball court image as a jpeg
+court2 <- readJPEG("court2.jpeg")
+
+# Create ggplot that takes all the combined years, and then places them on the graph based on the coordinates that are given in the data set
+# I also am loading the picture of the court on the graph, and then fitting it correctly so that the shots are a 2 pointer or 3 pointer based on where it is shot and that the data is represented well on the graph
+# We are coloring the court based on a miss or make and then shaping it based on if a shot is made or missed 
+shooting_years2 <- ggplot(combined_bucks_shots, aes(x = locationX, y = locationY, color = isShotMade, shape = isShotMade)) +
+  annotation_raster(court2, xmin = -250, xmax = 250, ymin = -55, ymax = 435) +  # Add basketball court background image
+  geom_point(size = 1, alpha = 0.4) +  # Plot shots as points and crosses
+  labs(title = "Milwaukee Bucks") + #Adding a title
+  scale_color_manual(name = "Shots", values = colors, labels = c("Make", "Miss")) +  # Adjust legend, labeling it and then using the colors to make the shots more notifiable
+  scale_shape_manual(name = "Shots", values = c(16, 4), labels = c("Make", "Miss")) + #Here are making the shapes so that a make is just a dot and a miss is just an X
+   ylim(-65, 300)+  # Limit y-axis range, when doing this we get rid of a few shots each year that are like half court shots and not really relevant shots, I decided to get rid of those shots because I thought that they were really insufficient to the results that we got here in this project. The made data is what I decided to include and is what makes the best representations of shots that have been taken over the years
+  theme_minimal()+ # was a simply graph
+  theme_void() # this command will take the lines and incremented numbers on the graph away and just leave the graph blank
+
+# Animate the plot over years taking the ggplot that we made and gives it a title and will animate it based on years 
+animation <- shooting_years2 +
+  transition_states(yearSeason) + # this will animate the code based on years 
+  labs(title = "Milwaukee Bucks Shots in {closest_state}")+  # Title based on year
+  theme(plot.title = element_text(hjust = 0.5)) # this command will center the title so it looks more professional
+
+# now just animate the command and we are going to slow it down with less frames per second, and then we can control the number of frames as well to only show one frame from each year 
+gganimate::animate( 
+  animation,
+  fps = .5,  # Adjust fps for slower animation
+  nframes = 24  # Adjust the number of frames
+)
+```
+\vspace{4cm}  
+- Teams are Shooting More Threes
+    * When we look at the shot graphs of the bucks it is obvious that the amount of 3-point shots is increasing throughout       the years. 
+    * When we look at a year in the early 2000s, in 2000, 3-point shots accounted for 15.32% of all total shots that year.       But this continues to grow. By the year 2015, when we see a first big change in this statistic, the percentage of         3-point shots that year reaches 22.94%. And from that year on, we see nothing but a steady increases including in         2021(when the Bucks won the championship), 3-point shots included 40.21% of all total shots that year. And in 2023        reaching an all time high percentage of 44.35%. 
+    * This is largely to due to the stats involved, if a player were to shoot 50% from 2-point range, they would only need       to shoot 33% from the 3-point line to have the same effect and therefore has been one of the reasons of the change. 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Calculate the total number of shots for the year 2000
+total_shots_2000 <- nrow(bucks_shots00)
+
+# Calculate the total number of three-point shots for the year 2000
+total_three_point_shots_2000 <- nrow(bucks_shots00[bucks_shots00$zoneRange == "24+ ft.", ])
+
+# Calculate the percentage of total shots that are three-point shots for the year 2000
+percentage_three_point_shots_2000 <- (total_three_point_shots_2000 / total_shots_2000) * 100
+ # this is 15.32%
+
+# Calculate the total number of shots for the year 2021
+total_shots_2021 <- nrow(bucks_shots21)
+
+# Calculate the total number of three-point shots for the year 2021
+total_three_point_shots_2021 <- nrow(bucks_shots21[bucks_shots21$zoneRange == "24+ ft.", ])
+
+# Calculate the percentage of total shots that are three-point shots for the year 2021
+percentage_three_point_shots_2021 <- (total_three_point_shots_2021 / total_shots_2021) * 100
+ # this percentage is 40.21%
+
+
+# Calculate the total number of shots for the year 2023
+total_shots_2023 <- nrow(bucks_shots23)
+
+# Calculate the total number of three-point shots for the year 2023
+total_three_point_shots_2023 <- nrow(bucks_shots23[bucks_shots23$zoneRange == "24+ ft.", ])
+
+# Calculate the percentage of total shots that are three-point shots for the year 2023
+percentage_three_point_shots_2023 <- (total_three_point_shots_2023 / total_shots_2023) * 100
+ # this is the highest year with 44.35%
+
+# Calculate the total number of shots for the year 2015
+total_shots_2015 <- nrow(bucks_shots15)
+
+# Calculate the total number of three-point shots for the year 2015
+total_three_point_shots_2015 <- nrow(bucks_shots16[bucks_shots16$zoneRange == "24+ ft.", ])
+
+# Calculate the percentage of total shots that are three-point shots for the year 2015
+percentage_three_point_shots_2015 <- (total_three_point_shots_2015 / total_shots_2015) * 100
+ # this is 22.84%
+
+```
+\vspace{1cm}  
+
+
+- The Mid-Range Shot is Dying
+    * When we look at the graph for mid-range shots through the years, we can clearly tell there is a decrease in the           amount of shots taken from that distance. We can point to the data. 
+    * In the year 2000, we found that mid-range shots were 32.83% of total shots that year. Compared to in the year 2021,       the mid-range percentage drops to 13.33% of total shots that year. 
+    * This stats makes sense, because as listed above, more teams are taking three point shots, therefore the shots have        to decline somewhere and this is where we happen to see it. 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Filter shots for 8-16 ft. range in bucks_shots00
+eight_to_sixteen_ft_00 <- bucks_shots00[bucks_shots00$zoneRange == "8-16 ft.", ]
+
+# Count the total number of shots from 8-16 ft.
+eight_to_sixteen_ft_count_00 <- nrow(eight_to_sixteen_ft_00)
+
+# Calculate the percentage of total shots that are from 8-16 ft.
+eight_to_sixteen_ft_percentage_00 <- (eight_to_sixteen_ft_count_00 / nrow(bucks_shots00)) * 100
+ # calculates the midrange shot for the year 2000 and its 33.83%
+
+
+# Filter shots for 8-16 ft. range in bucks_shots21
+eight_to_sixteen_ft_21 <- bucks_shots21[bucks_shots21$zoneRange == "8-16 ft.", ]
+
+# Count the total number of shots from 8-16 ft.
+eight_to_sixteen_ft_count_21 <- nrow(eight_to_sixteen_ft_21)
+
+# Calculate the percentage of total shots that are from 8-16 ft.
+eight_to_sixteen_ft_percentage_21 <- (eight_to_sixteen_ft_count_21 / nrow(bucks_shots21)) * 100
+ # calculates the midrange shot for the year 2021 and its 13.33%
+``` 
+\vspace{1cm}     
+   
+
+- Shots inside 8ft. Have Increased
+    * There are a lot more <8ft shots being taken compared to in the earlier 2000s when there was lots of other                shots in the mid range being taken instead
+    * When we look at the data, in 2000, <8ft shots were 32.39% of the total shots taken in the season. Compared to in the       year 2021 (when the Bucks won the championship), <8ft shots were 38.14% of the total shots taken in the season. 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Filter shots for layups (shots less than 8 ft.)
+layups00 <- bucks_shots00[bucks_shots00$zoneRange == "Less Than 8 ft.", ]
+
+# Count the total number of layup shots
+layups_count00 <- nrow(layups00)
+
+# Count the total number of shots
+total_shots_count00 <- nrow(bucks_shots00)
+
+# Calculate the percentage of total shots that are layups
+layups_percentage00 <- (layups_count00 / total_shots_count00) * 100
+ # the percentage in the year 2000 is 32.39%
+
+
+# Filter shots for layups (shots less than 8 ft.) in bucks_shots22
+layups21 <- bucks_shots21[bucks_shots21$zoneRange == "Less Than 8 ft.", ]
+
+# Count the total number of layup shots
+layups_count21 <- nrow(layups21)
+
+# Count the total number of shots
+total_shots_count21 <- nrow(bucks_shots21)
+
+# Calculate the percentage of total shots that are layups
+layups_percentage21 <- (layups_count21 / total_shots_count21) * 100
+ # the percentage in the year 2021 is 38.14%
+
+```
+\vspace{1cm}     
+    
+    
+- Corner 3's are the best 3-point shots
+    * We see that over the years the highest percentage 3 point basket is from the corners
+    * When we look at the percentage of makes for corner 3-point shots it is 38.67% compared to the rest of the court           which is 35.67%
+    
+    
+    
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Filter shots in the Left and Right Corner 3 zones
+corner_3_shots <- combined_bucks_shots[combined_bucks_shots$zoneBasic %in% c("Left Corner 3", "Right Corner 3"), ]
+
+# Count the total number of shots made and attempted in the Corner 3 zones
+total_made_count <- sum(corner_3_shots$isShotMade == TRUE)
+total_attempted_count <- nrow(corner_3_shots)
+
+# Calculate the average shooting percentage
+average_shooting_percentage <- total_made_count / total_attempted_count
+ # finds the average of corner 3 counts which is 38.67%
+
+# Filter shots for all three-point shots that are not corner threes
+three_point_non_corner_shots <- combined_bucks_shots[combined_bucks_shots$zoneRange == "24+ ft." & 
+                                                     combined_bucks_shots$zoneBasic != "Left Corner 3" &
+                                                     combined_bucks_shots$zoneBasic != "Right Corner 3", ]
+
+# Count the number of attempts and makes for three-point shots that are not corner threes
+three_non_corner_attempts <- nrow(three_point_non_corner_shots)
+three_non_corner_makes <- sum(three_point_non_corner_shots$isShotMade == TRUE)
+
+# Calculate the shooting percentage for three-point shots that are not corner threes
+three_non_corner_shooting_percentage <- three_non_corner_makes / three_non_corner_attempts
+ # finds the average of all non corner 3s which is 35.67%
+
+```   
+\vspace{4cm}    
+    
+    
+  When trying to decide where we should put a 4-point line, we went back to our data figure out a solution. First we took all 2-point and 3-point shots and found the probability that it was a make respectively. We then were able to take the probability of a make from the and figure out what the expected value was for each. For a 2-point shot the expected value was 0.9824348 and for a 3-point shot it was 0.7291956. Then next, if we average out these two expected values, we are able to find the expected value for anywhere on the court. Having this information, I could next take the we are able to loop through points that we think should qualify for our 4-point line. We ware using this expected value and then figuring out what the probability of the 4-point line should be in order to build this line. Finally when we find the distance that our 4-point line should be. It turns out it should be a 28ft. shot. I was then able to build a blue line on the court that would represent that a 4-point shot.
+  
+\vspace{2cm}   
+
+  Now if I were to look at my favorite player Khris Middleton, when adding the 4-point line at the 28ft mark, he would only have made 9 of these all season. So adding the 4-point line to his season shots, would only increase his season total points by .83% for the season. Therefore, I think adding it would really have a netural effect because it doesn't add much to the Bucks' best shooter in terms of scoring total. 
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# Calculate expected value for two-point shots
+two_shot <- combined_bucks_shots[combined_bucks_shots$zoneRange != "24+ ft.",] # we find all of the shots that are not 3 point shots based on the range there are from 
+two_attempts <- nrow(two_shot) # we count up the number of them 
+two_makes <- sum(two_shot$isShotMade == TRUE) # is if the shot it made and if it is, we add it 
+two_expected_percentage <- (two_makes / two_attempts) # here we find the average percentage of the 2 point shots
+two_expected_value <- two_expected_percentage * 2  # then we take the average percentage and then take it times the shot value which is 2 to get the expected value which was 0.9824348
+
+# Calculate expected value for three-point shots
+three_shot <- combined_bucks_shots[combined_bucks_shots$zoneRange == "24+ ft.",]# we find all of the shots that are 3 point shots based on the range there are from
+three_attempts <- nrow(three_shot)# we count up the number of them
+three_makes <- sum(three_shot$isShotMade == TRUE) # is if the shot it made and if it is, we add it 
+three_expected_percentage <- (three_makes / three_attempts) # here we find the average percentage of the 3 point shots
+three_expected_value <- three_expected_percentage * 3 # then we take the average percentage and then take it times the shot value which is 3 to get the expected value which was 1.093793
+
+# Calculate the average expected value for both two-point and three-point shots
+expected_value_both <- (three_expected_value + two_expected_value)/2
+
+# Calculate expected value for shots from a "4-point line" based on shooting percentages from different distances
+four_expected_value <- c()
+
+# Loop through each unique distance in the 3 point zone to pull out points for our 4 point line
+for (distance in unique(three_shot$distanceShot)) {
+  subset_data <- three_shot[three_shot$distanceShot >= distance,] # Filter data for shots with distances greater than or equal to the current distance
+  probability <- sum(subset_data$isShotMade == TRUE) / nrow(subset_data) # Calculate the probability of making a shot from this distance
+  four_expected_value <- c(four_expected_value, probability * 4) # Calculate the expected value for a "4-point line" shot at this distance and then add it to the vector
+}
+
+# Create a data frame to store distances and expected values
+four_expected_value_df <- data.frame(distance = unique(three_shot$distanceShot),
+                                     expected_value = four_expected_value)
+# Calculate the absolute differences between each expected value and the average expected value for both two-point and three-point shots
+differences <- abs(four_expected_value_df$expected_value - expected_value_both)
+# Find the index of the distance with the smallest difference
+closest_index <- which.min(differences)
+# Get the distance corresponding to the smallest difference
+four_distance <- four_expected_value_df$distance[closest_index]
+
+# Define the start and end points for the curved line
+start <- c(-248, 130)
+end <- c(248, 130)
+
+# Create a data frame for the curved line
+line_data <- data.frame(
+  x = c(start[1], end[1]),
+  y = c(start[2], end[2]),
+  isShotMade = c(FALSE, FALSE) # this will make the data and make it go from the starting point to the ending point on the graph
+)
+
+# Add the curved line to the ggplot
+animation <- shooting_years2 +
+  geom_curve(data = line_data, aes(x = x[1], y = y[1], xend = x[2], yend = y[2]),
+             curvature = -.70,  # Adjust curvature (negative for left curve, positive for right curve)
+             color = "blue",   # colors it blue
+             size = 1.5) +     # Line thickness
+  transition_states(yearSeason, transition_length = 2, state_length = 1) +
+  labs(title = "Milwaukee Bucks Shots in {closest_state}")  # this will title the graph correctly by year
+
+# Animate the plot
+gganimate::animate(
+  animation,
+  fps = .5,  # Adjust fps for slower animation 
+  nframes = 24  # Adjust the number of frames
+)
+```
